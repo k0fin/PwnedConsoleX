@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import re
+import hibpwned
+import readline
+
+TARGET = None
+APIKEY = None
+PROJECT = 'PwnedConsoleX'
+
+def camelCase(s):
+    '''Convert provided string argument "s" to camel case formatting.
+    This allows us to always be sure that user input will be setup to match
+    the hibpwned.Pwned class attribute so that we can use them as custom shell commands. :)'''
+
+    s = re.sub(r"(_|-)+", " ", s).title().replace(" ", "")
+    formatted_str = ''.join([s[0].lower(), s[1:]])
+
+    return formatted_str
+
+def create_history():
+    os.system('touch {}/.pcx_history'.format(os.getcwd()))
+
+def load_history():
+    with open('{}/.pcx_history'.format(os.getcwd()),'r') as historyfile:
+        return historyfile.read()
+
+def write_history(cmd):
+    with open('{}/.pcx_history'.format(os.getcwd()),'a') as historyfile:
+        historyfile.write('{}\n'.format(cmd))
+
+def json_writer(jdata,jfile):
+    '''Function to write JSON data
+       to console session file.'''
+    with open(jfile, 'w') as sfile:
+        json.dump(jdata, sfile)
+
+def json_loader(jfile):
+    '''Loads JSON data from file'''
+    with open(jfile, 'r') as jdata:
+        sdata = json.load(jdata)
+        return sdata
+
+def HIBPShell(api=None, query=None):
+
+    global PROJECT
+    global TARGET
+    global APIKEY
+
+    while True:
+
+        readline.get_line_buffer()
+
+        prompt = '[ pcx ] ~> '
+        cmd = input(prompt)
+
+        if cmd == 'exit' or cmd == 'quit' or cmd == 'q':
+            print("Goodbye!")
+            sys.exit()
+
+        elif cmd.split()[0].lower() == "api":
+            APIKEY = cmd.split().pop()
+
+        elif cmd.split()[0].lower() == "account":
+            TARGET = cmd.split().pop()
+
+        elif cmd.split()[0].lower() == 'whoami':
+
+            print('PCX Configuration\n{}'.format('-' * 15))
+            print(TARGET)
+            print(APIKEY)
+
+        elif cmd.split()[0] == 'help':
+            hibp = hibpwned.Pwned(TARGET, PROJECT, APIKEY)
+            non_cmds = ['account', 'agent', 'check', 'header', 'key']
+            cmd_attrs = dir(hibp)
+            help_cmds = []
+
+            for c in cmd_attrs:
+                if '_' not in c and c not in non_cmds:
+                    help_cmds.append(c)
+
+            for c in sorted(list(set(help_cmds))):
+                print(' - {}'.format(c))
+
+        else:
+            hibp = hibpwned.Pwned(TARGET, PROJECT, APIKEY)
+            if cmd not in dir(hibp):
+                cmd = camelCase(cmd)
+
+            command_attr = getattr(hibp, cmd)
+            hibp_results = command_attr()
+            write_history(cmd)
+
+            print(hibp_results)
+
+
+if __name__ == '__main__':
+
+    HIBPShell()
