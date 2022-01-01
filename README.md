@@ -3,12 +3,18 @@ A CLI shell for performing queries against the HaveIBeenPwned? API to gather bre
 
 ## Overview
 
+A console-based tool for querying HaveIBeenPwned?
+
 ## Requirements
 
-## Installation
+    python3 -m pip install hibpwned
 
-## Usage
+## Installation & Usage
 
-## Capabilities
+    git clone https://github.com/k0fin/PwnedConsoleX.git
+    cd PwnedConsoleX
+    ./pcx
 
 ## To-Do
+
+* Fix pcx command input case conversion

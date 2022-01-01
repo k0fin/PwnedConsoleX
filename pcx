@@ -5,10 +5,12 @@ import sys
 import re
 import hibpwned
 import readline
+import inspect
 
 TARGET = None
 APIKEY = None
-PROJECT = 'PwnedConsoleX'
+PROJECT = 'PwnedConsoleX' # NOTE: This gets passed to HIBP as a User-Agent string in the request to the API.
+                          # Modify this value to a real User-Agent string to appear as any web client you'd like.
 
 def camelCase(s):
     '''Convert provided string argument "s" to camel case formatting.
@@ -43,6 +45,9 @@ def json_loader(jfile):
         sdata = json.load(jdata)
         return sdata
 
+def is_bound(m):
+    return hasattr(m, '__self__') is not None
+
 def HIBPShell(api=None, query=None):
 
     global PROJECT
@@ -52,7 +57,6 @@ def HIBPShell(api=None, query=None):
     while True:
 
         readline.get_line_buffer()
-
         prompt = '[ pcx ] ~> '
         cmd = input(prompt)
 
@@ -63,7 +67,7 @@ def HIBPShell(api=None, query=None):
         elif cmd.split()[0].lower() == "api":
             APIKEY = cmd.split().pop()
 
-        elif cmd.split()[0].lower() == "account":
+        elif cmd.split()[0].lower() == "email":
             TARGET = cmd.split().pop()
 
         elif cmd.split()[0].lower() == 'whoami':
@@ -83,19 +87,12 @@ def HIBPShell(api=None, query=None):
                     help_cmds.append(c)
 
             for c in sorted(list(set(help_cmds))):
-                print(' - {}'.format(c))
+                print('   {}'.format(c))
 
         else:
             hibp = hibpwned.Pwned(TARGET, PROJECT, APIKEY)
-            if cmd not in dir(hibp):
-                cmd = camelCase(cmd)
-
-            command_attr = getattr(hibp, cmd)
-            hibp_results = command_attr()
-            write_history(cmd)
-
-            print(hibp_results)
-
+            print(cmd)
+            print(camelCase(cmd))
 
 if __name__ == '__main__':
 
