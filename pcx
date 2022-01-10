@@ -45,9 +45,6 @@ def json_loader(jfile):
         sdata = json.load(jdata)
         return sdata
 
-def is_bound(m):
-    return hasattr(m, '__self__') is not None
-
 def HIBPShell(api=None, query=None):
 
     global PROJECT
@@ -59,6 +56,7 @@ def HIBPShell(api=None, query=None):
         readline.get_line_buffer()
         prompt = '[ pcx ] ~> '
         cmd = input(prompt)
+        hibp = hibpwned.Pwned(TARGET, PROJECT, APIKEY)
 
         if cmd == 'exit' or cmd == 'quit' or cmd == 'q':
             print("Goodbye!")
@@ -89,10 +87,32 @@ def HIBPShell(api=None, query=None):
             for c in sorted(list(set(help_cmds))):
                 print('   {}'.format(c))
 
+        elif cmd not in dir(hibp):
+            print('[-] Command not understood.')
+            print('[*] Use the "help" command for available PwnedConsoleX commands.\n')
+
+            HIBPShell()
+
+
         else:
             hibp = hibpwned.Pwned(TARGET, PROJECT, APIKEY)
-            print(cmd)
-            print(camelCase(cmd))
+            if not TARGET:
+                print('Please load a target email address to perform search queries for.')
+                print('(e.x.: email target@domain.com)')
+
+                HIBPShell()
+
+            if not APIKEY:
+                print('Please load an API key for the HaveIBeenPwned? API to perform search queries.')
+                print('(e.x.: api ********************************)')
+
+                HIBPShell()
+
+            run_cmd = getattr(hibp, cmd)
+            launch_run_cmd = run_cmd()
+
+            if launch_run_cmd != 404:
+                print(launch_run_cmd)
 
 if __name__ == '__main__':
 
